@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}
+  {% if object %}Редактирование публикации{% else %}Создание публикации{% endif %}
+{% endblock %}
+{% block content %}
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-md-8">
+      <div class="card">
+        <div class="card-header">
+          <h3 class="text-center">
+            {% if object %}
+              {% if object.pk %}Редактирование публикации{% else %}Удаление публикации{% endif %}
+            {% else %}
+              Создание публикации
+            {% endif %}
+          </h3>
+        </div>
+        <div class="card-body">
+          {% if object.pk and request.resolver_match.url_name == 'delete_post' %}
+            <div class="alert alert-warning">
+              <h5>Вы уверены, что хотите удалить эту публикацию?</h5>
+              <p><strong>{{ object.title }}</strong></p>
+              <p>{{ object.text|truncatewords:20 }}</p>
+            </div>
+            <form method="post">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-danger">Да, удалить</button>
+              <a href="{% url 'blog:post_detail' id=object.pk %}" class="btn btn-secondary">Отмена</a>
+            </form>
+          {% else %}
+            <form method="post" enctype="multipart/form-data">
+              {% csrf_token %}
+              {% for field in form %}
+                <div class="form-group mb-3">
+                  <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                  {{ field }}
+                  {% if field.errors %}
+                    <div class="text-danger">{{ field.errors }}</div>
+                  {% endif %}
+                  {% if field.help_text %}
+                    <small class="form-text text-muted">{{ field.help_text }}</small>
+                  {% endif %}
+                </div>
+              {% endfor %}
+              <button type="submit" class="btn btn-primary">
+                {% if object %}Сохранить{% else %}Создать{% endif %}
+              </button>
+              <a href="{% url 'blog:index' %}" class="btn btn-secondary">Отмена</a>
+            </form>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

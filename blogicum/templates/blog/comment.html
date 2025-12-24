@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block title %}
+  {% if object.pk and request.resolver_match.url_name == 'delete_comment' %}
+    Удаление комментария
+  {% else %}
+    Редактирование комментария
+  {% endif %}
+{% endblock %}
+{% block content %}
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-md-8">
+      <div class="card">
+        <div class="card-header">
+          <h3 class="text-center">
+            {% if object.pk and request.resolver_match.url_name == 'delete_comment' %}
+              Удаление комментария
+            {% else %}
+              Редактирование комментария
+            {% endif %}
+          </h3>
+        </div>
+        <div class="card-body">
+          {% if object.pk and request.resolver_match.url_name == 'delete_comment' %}
+            <div class="alert alert-warning">
+              <h5>Вы уверены, что хотите удалить этот комментарий?</h5>
+              <p>{{ object.text }}</p>
+              <small class="text-muted">Автор: {{ object.author.username }}, {{ object.created_at|date:"d.m.Y H:i" }}</small>
+            </div>
+            <form method="post">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-danger">Да, удалить</button>
+              <a href="{% url 'blog:post_detail' id=object.post.pk %}" class="btn btn-secondary">Отмена</a>
+            </form>
+          {% else %}
+            <form method="post">
+              {% csrf_token %}
+              {% for field in form %}
+                <div class="form-group mb-3">
+                  <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                  {{ field }}
+                  {% if field.errors %}
+                    <div class="text-danger">{{ field.errors }}</div>
+                  {% endif %}
+                </div>
+              {% endfor %}
+              <button type="submit" class="btn btn-primary">Сохранить</button>
+              <a href="{% url 'blog:post_detail' id=object.post.pk %}" class="btn btn-secondary">Отмена</a>
+            </form>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
