@@ -31,20 +31,30 @@ class PostAdmin(admin.ModelAdmin):
         'pub_date',
         'created_at',
     )
-    list_filter = ('is_published', 'category')
+    list_filter = ('is_published', 'category', 'author')
     search_fields = ('title', 'text')
     list_select_related = ('category', 'location', 'author')
-    raw_id_fields = ('author',)
     date_hierarchy = 'pub_date'
+    
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == "author":
+            kwargs["queryset"] = db_field.related_model.objects.filter(is_active=True)
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
 
 @admin.register(Comment)
 class CommentAdmin(admin.ModelAdmin):
     list_display = ('post', 'author', 'created_at', 'text_preview')
-    list_filter = ('created_at',)
+    list_filter = ('created_at', 'author')
     search_fields = ('text', 'author__username', 'post__title')
-    raw_id_fields = ('author', 'post')
 
     def text_preview(self, obj):
         return obj.text[:50] + '...' if len(obj.text) > 50 else obj.text
     text_preview.short_description = 'Превью текста'
+    
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == "author":
+            kwargs["queryset"] = db_field.related_model.objects.filter(is_active=True)
+        elif db_field.name == "post":
+            kwargs["queryset"] = db_field.related_model.objects.select_related('author')
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
